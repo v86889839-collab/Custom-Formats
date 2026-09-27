@@ -16,7 +16,7 @@ This repo provides:
 | `.unkn` | Unknown-type placeholder; auto-detected and renamed | Dynamic code delivery, plugin system |
 | `.pyru` | Hybrid Python/Rust script with section markers | Multi-language command modules |
 | `.lujit` | LuaJIT-ready scripts | In-game logic, fast scripting for Roblox/bots |
-| `.acf` | Application Critical Manifest (JSON) | Integrity checks, version control, admin flags (for LUnlocker) |
+| `.acf` | Application Critical Manifest (JSON) | Integrity checks, version control, admin flags (for Rust) |
 | `.ctxt` | Critical Text with SHA-256 signature | Signed rules, moderation policies, verified configs |
 | `.stxt` | Structured text commands | Bot command batching, moderation actions, point systems |
 
