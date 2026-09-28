@@ -4,7 +4,7 @@ A collection of custom file formats and Python parsers/generators for automation
 
 This repo provides:
 
-- Custom file format definitions (`.luna`, `.unkn`, `.pyru`, `.lujit`, `.acf`, `.ctxt`, `.stxt`, `.wip`, `.lock`, `.anim`, `.dep`, `.meta`, `.bake`, `.diff`, `.texb`, `.rule`, `.seed`, `.cfgx`, `.temp`, `.snap`, `.cache`, `.pref`, `.plan`, `.todo`, `.draft`, `.ref`, `.out`)
+- Custom file format definitions (`.luna`, `.unkn`, `.pyru`, `.lujit`, `.acf`, `.ctxt`, `.stxt`)
 - Python generators to create test files for each format
 - Reference parsers to read and process these formats
 - Example usage for bot and system-level workflows
