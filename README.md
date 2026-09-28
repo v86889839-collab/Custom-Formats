@@ -4,12 +4,14 @@ A collection of custom file formats and Python parsers/generators for automation
 
 This repo provides:
 
-- Custom file format definitions (`.luna`, `.unkn`, `.pyru`, `.lujit`, `.acf`, `.ctxt`, `.stxt`)
+- Custom file format definitions (`.luna`, `.unkn`, `.pyru`, `.lujit`, `.acf`, `.ctxt`, `.stxt`, `.wip`, `.lock`, `.anim`, `.dep`, `.meta`, `.bake`, `.diff`, `.texb`, `.rule`, `.seed`, `.cfgx`, `.temp`, `.snap`, `.cache`, `.pref`, `.plan`, `.todo`, `.draft`, `.ref`, `.out`)
 - Python generators to create test files for each format
 - Reference parsers to read and process these formats
 - Example usage for bot and system-level workflows
 
 ## Formats Overview
+
+### Core Formats (with full parser support)
 
 | Format | Purpose | Typical Use Case |
 |--------|---------|------------------|
@@ -21,12 +23,37 @@ This repo provides:
 | `.ctxt` | Critical Text with SHA-256 signature | Signed rules, moderation policies, verified configs |
 | `.stxt` | Structured text commands | Bot command batching, moderation actions, point systems |
 
+### Extended Formats (status, workflow, and asset management)
+
+| Format | Purpose | Typical Use Case |
+|--------|---------|------------------|
+| `.wip` | Work In Progress marker | Unfinished scripts/models, renamed to final type when done |
+| `.lock` | Locked file (no modifications) | Prevent edits to shared configs or critical assets |
+| `.anim` | Animation keyframe data | Reusable animations across multiple models |
+| `.dep` | Dependencies list | Track what a file needs to run (modules, models, assets) |
+| `.meta` | Metadata sidecar file | Store hash, author, tags, creation date alongside main file |
+| `.bake` | Pre-computed baked data | Cached lighting, navigation meshes, collision data |
+| `.diff` | Difference / patch file | Ship only changed portions between file versions |
+| `.texb` | Texture bundle | Pack diffuse, normal, roughness textures into one file |
+| `.rule` | Validation rule definition | Define what counts as "valid" for a file or project |
+| `.seed` | Generator input parameters | Procedural world/landscape/structure generation seeds |
+| `.cfgx` | Extended config with nested structures | Complex configs with conditions, sections, logic |
+| `.temp` | Temporary file | Short-lived working files, deleted after processing |
+| `.snap` | Snapshot of current state | Capture files, settings, process state at a moment in time |
+| `.cache` | Cached computation results | Avoid recomputing expensive operations |
+| `.pref` | User preferences | Personal settings: theme, language, layout |
+| `.plan` | Action plan (ordered steps) | Build pipelines, migration plans, release checklists |
+| `.todo` | Task list linked to a plan | Granular checkboxes tied to a `.plan` file |
+| `.draft` | Draft / rough sketch | Raw unfinished content, excluded from builds |
+| `.ref` | Reference pointer to another file | Link between files without copying data |
+| `.out` | Program output capture | Store stdout/stderr results for logging and review |
+
 ## Quick Start
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/v86889839-collab/custom-formats.git
+git clone https://github.com/v86889839-collab/custom-formatsV2.git
 cd custom-formats
 ```
 
@@ -47,6 +74,26 @@ This will create the following files in the root directory:
 - `app.acf` — manifest with SHA-256, version, and admin flags
 - `rules.ctxt` — signed moderation rules with SHA-256 header
 - `actions.stxt` — batch of bot commands (e.g., `r!add-points`, `r!give-role`)
+- `module.wip` — work-in-progress script placeholder
+- `shared.lock` — locked file marker example
+- `walk.anim` — sample animation keyframe data
+- `module.dep` — dependencies list for a script
+- `model.meta` — metadata sidecar for a model file
+- `scene.bake` — pre-computed baked lighting data
+- `v1_to_v2.diff` — difference/patch between two versions
+- `textures.texb` — packed texture bundle
+- `lint.rule` — validation rule definition
+- `world.seed` — procedural generation seed parameters
+- `advanced.cfgx` — extended config with nested sections
+- `work.temp` — temporary working file
+- `checkpoint.snap` — state snapshot
+- `render.cache` — cached computation result
+- `user.pref` — user preferences
+- `release.plan` — ordered action plan
+- `release.todo` — task list linked to release plan
+- `notes.draft` — draft/rough sketch file
+- `link_to_model.ref` — reference pointer
+- `build.out` — captured program output
 
 You can inspect these files directly or feed them into the reference parser.
 
@@ -55,7 +102,7 @@ You can inspect these files directly or feed them into the reference parser.
 Use the reference parser module to inspect and validate the generated files:
 
 ```bash
-python custom_formats.py
+python custom_formatsV2.py
 ```
 
 The script will:
@@ -372,6 +419,627 @@ create_stxt([
 - All subsequent `KEY: VALUE` lines are parameters of that command.
 - Blank lines separate command blocks.
 
+---
+
+### `.wip` – Work In Progress
+
+**Use case:** Mark files that are still being worked on. Once finished, rename to the final extension.
+
+Example (`module.wip`):
+
+```text
+# WIP: anti_spam module
+# Status: 60% complete
+# TODO: Add rate limiting logic
+
+def check_spam(message):
+    pass  # not implemented yet
+```
+
+**How to use:**
+
+```python
+import os
+
+# Rename when done
+os.rename("module.wip", "module.py")
+```
+
+**Rules:**
+- Files with `.wip` should not be executed or included in builds.
+- When the work is complete, strip `.wip` to reveal the final extension.
+
+---
+
+### `.lock` – Locked File
+
+**Use case:** Prevent modifications to shared or critical files. To unlock, simply rename (remove `.lock`).
+
+Example (`shared_config.lock`):
+
+```text
+# This file is locked. Remove .lock extension to edit.
+[bot]
+prefix = r!
+```
+
+**How to use:**
+
+```python
+import os
+
+# Unlock by renaming
+os.rename("shared_config.lock", "shared_config.luna")
+
+# Lock again after edits
+os.rename("shared_config.luna", "shared_config.lock")
+```
+
+**Rules:**
+- While `.lock` is present, the file should be treated as read-only.
+- No automated process should modify a locked file.
+
+---
+
+### `.anim` – Animation Keyframe Data
+
+**Use case:** Store animation keyframes separately from models for reuse across multiple objects.
+
+Example (`walk.anim`):
+
+```text
+# ANIM v1
+# Target: humanoid_rig
+# Duration: 2.0s
+# FPS: 30
+
+FRAME 0:
+  bone_root: pos(0,0,0) rot(0,0,0,1)
+
+FRAME 15:
+  bone_root: pos(0.5,0,0) rot(0,0.38,0,0.92)
+
+FRAME 30:
+  bone_root: pos(1,0,0) rot(0,0,0,1)
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+content = Path("walk.anim").read_text(encoding="utf-8")
+# Parse frames and apply to rig
+```
+
+---
+
+### `.dep` – Dependencies List
+
+**Use case:** Declare what a file needs to run: modules, models, textures, other assets.
+
+Example (`module.dep`):
+
+```text
+# DEP v1
+# File: module.pyru
+
+python: numpy>=1.21, requests>=2.28
+rust: serde, tokio
+assets: models/character.rmodl, textures/skin.texb
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+deps = Path("module.dep").read_text(encoding="utf-8")
+# Parse and install/verify dependencies before running the parent file
+```
+
+---
+
+### `.meta` – Metadata Sidecar
+
+**Use case:** Store metadata alongside a main file: hash, author, tags, creation date.
+
+Example (`model.meta`):
+
+```json
+{
+  "file": "character.rmodl",
+  "author": "v86889839",
+  "created": "2025-03-15",
+  "tags": ["character", "humanoid", "rigged"],
+  "sha256": "a1b2c3d4e5f6...",
+  "version": "1.0"
+}
+```
+
+**How to use:**
+
+```python
+import json
+from pathlib import Path
+
+meta = json.loads(Path("model.meta").read_text(encoding="utf-8"))
+print(f"Author: {meta['author']}, Tags: {meta['tags']}")
+```
+
+---
+
+### `.bake` – Baked Data
+
+**Use case:** Pre-computed data that doesn't need recalculation every launch: baked lighting, nav meshes, collision data.
+
+Example (`scene.bake`):
+
+```text
+# BAKE v1
+# Type: lightmap
+# Source: scene.luna
+# Resolution: 2048x2048
+
+[entry_0]
+position: 10,20,5
+color: 255,240,200
+intensity: 0.8
+
+[entry_1]
+position: -15,10,-5
+color: 100,150,255
+intensity: 0.5
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+data = Path("scene.bake").read_text(encoding="utf-8")
+# Parse entries and load into engine
+```
+
+---
+
+### `.diff` – Difference / Patch File
+
+**Use case:** Ship only the changed portions between file versions instead of the entire file.
+
+Example (`v1_to_v2.diff`):
+
+```text
+# DIFF v1
+# From: config_v1.luna
+# To: config_v2.luna
+
+[-] prefix: r!
+[+] prefix: !
+
+[-] max_users: 200
+[+] max_users: 500
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+diff = Path("v1_to_v2.diff").read_text(encoding="utf-8")
+# Apply [-] removals and [+] additions to the source file
+```
+
+---
+
+### `.texb` – Texture Bundle
+
+**Use case:** Pack multiple related textures (diffuse, normal, roughness) into one file with metadata.
+
+Example (`textures.texb`):
+
+```text
+# TEXB v1
+# Material: wood_planks
+
+[diffuse]
+file: wood_diffuse.png
+format: RGBA8
+size: 1024x1024
+
+[normal]
+file: wood_normal.png
+format: RGBA8
+size: 1024x1024
+
+[roughness]
+file: wood_rough.png
+format: R8
+size: 1024x1024
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+bundle = Path("textures.texb").read_text(encoding="utf-8")
+# Parse sections and load each texture map
+```
+
+---
+
+### `.rule` – Validation Rule
+
+**Use case:** Define what counts as "valid" for a file or project. Used by linters and CI checks.
+
+Example (`lint.rule`):
+
+```text
+# RULE v1
+# Target: *.py, *.pyru
+
+[forbidden]
+- os.system
+- subprocess.call with shell=True
+- eval(
+- exec(
+
+[required]
+- encoding="utf-8" in all read/write calls
+
+[naming]
+- snake_case for functions
+- PascalCase for classes
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+rules = Path("lint.rule").read_text(encoding="utf-8")
+# Parse rules and validate target files against them
+```
+
+---
+
+### `.seed` – Generator Input
+
+**Use case:** Store parameters for procedural generation: worlds, landscapes, structures.
+
+Example (`world.seed`):
+
+```text
+# SEED v1
+# Generator: terrain_v2
+
+seed: 42
+biome: forest
+size: 256x256
+height_range: 0-64
+noise_octaves: 6
+noise_scale: 0.01
+water_level: 32
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+params = Path("world.seed").read_text(encoding="utf-8")
+# Parse and feed into procedural generator
+```
+
+---
+
+### `.cfgx` – Extended Config
+
+**Use case:** Complex configs with nested structures, conditions, and logic. For advanced LUnlocker and ReBoot settings.
+
+Example (`advanced.cfgx`):
+
+```text
+# CFGX v1
+
+[mode: safe]
+  scan_depth: shallow
+  auto_quarantine: true
+  notify_admin: true
+
+[mode: aggressive]
+  scan_depth: deep
+  auto_quarantine: true
+  auto_delete: true
+  notify_admin: false
+
+[condition: os_version < 10.0.19041]
+  fallback_mode: safe
+  warn: "OS too old for aggressive mode"
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+cfg = Path("advanced.cfgx").read_text(encoding="utf-8")
+# Parse sections, evaluate conditions, select active mode
+```
+
+---
+
+### `.temp` – Temporary File
+
+**Use case:** Short-lived working files created during processing. Should be deleted after use.
+
+Example (`work.temp`):
+
+```text
+# TEMP — auto-generated, safe to delete
+processing_id: 8a3f2b1c
+step: 3/5
+intermediate_hash: d4e5f6...
+```
+
+**How to use:**
+
+```python
+import os
+from pathlib import Path
+
+# Use during processing
+Path("work.temp").write_text("intermediate data", encoding="utf-8")
+
+# Clean up when done
+os.remove("work.temp")
+```
+
+**Rules:**
+- `.temp` files should never be committed to version control.
+- Any tool finding a `.temp` file older than its session may safely delete it.
+
+---
+
+### `.snap` – State Snapshot
+
+**Use case:** Capture a moment-in-time state of files, settings, or processes.
+
+Example (`checkpoint.snap`):
+
+```text
+# SNAP v1
+# Timestamp: 2025-03-15T14:30:00
+# Reason: pre-update checkpoint
+
+[files]
+  config.luna: a1b2c3...
+  rules.ctxt: d4e5f6...
+  actions.stxt: g7h8i9...
+
+[settings]
+  mode: safe
+  scan_depth: shallow
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+snap = Path("checkpoint.snap").read_text(encoding="utf-8")
+# Parse and compare against current state to detect changes
+```
+
+---
+
+### `.cache` – Cached Computation Results
+
+**Use case:** Store results of expensive operations to avoid recomputation.
+
+Example (`render.cache`):
+
+```text
+# CACHE v1
+# Computed: 2025-03-15T10:00:00
+# Source: scene.bake
+# TTL: 86400
+
+result_hash: a1b2c3d4...
+data_path: ./render_output/
+frame_count: 300
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+import time
+
+cache = Path("render.cache").read_text(encoding="utf-8")
+# Check TTL; if expired, recompute and overwrite
+```
+
+---
+
+### `.pref` – User Preferences
+
+**Use case:** Personal settings stored per-project: theme, language, layout.
+
+Example (`user.pref`):
+
+```text
+# PREF v1
+
+[ui]
+theme: dark
+language: ru
+font_size: 14
+
+[editor]
+tab_size: 4
+auto_save: true
+format_on_save: true
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+prefs = Path("user.pref").read_text(encoding="utf-8")
+# Parse and apply to UI/editor settings
+```
+
+---
+
+### `.plan` – Action Plan
+
+**Use case:** Ordered sequence of steps for builds, migrations, releases.
+
+Example (`release.plan`):
+
+```text
+# PLAN v1
+# Title: Release 2.0
+# Created: 2025-03-15
+
+[steps]
+1: Bump version in all .acf manifests
+2: Run validation rules (.rule) on all scripts
+3: Generate .snap checkpoint
+4: Build all .pyru modules
+5: Pack textures into .texb bundles
+6: Compute SHA-256 for all critical files
+7: Update .meta sidecars
+8: Tag release in git
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+plan = Path("release.plan").read_text(encoding="utf-8")
+# Parse steps and execute in order
+```
+
+---
+
+### `.todo` – Task List
+
+**Use case:** Granular checklist linked to a `.plan` file.
+
+Example (`release.todo`):
+
+```text
+# TODO v1
+# Linked plan: release.plan
+
+[ ] Bump version in app.acf
+[ ] Bump version in core.acf
+[x] Run lint.rule on all .py files
+[ ] Generate checkpoint.snap
+[ ] Build hybrid.pyru
+[x] Pack textures.texb
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+todo = Path("release.todo").read_text(encoding="utf-8")
+# Parse checkbox states and update as tasks complete
+```
+
+---
+
+### `.draft` – Draft / Rough Sketch
+
+**Use case:** Raw unfinished content. Excluded from builds and execution.
+
+Example (`notes.draft`):
+
+```text
+# DRAFT — do not build, do not execute
+
+Ideas for v2.1:
+- Add .autho chain for scripts: .unscr → .unscr.autho → .rscr
+- Auto-generate .dep files from imports
+- Integrate .rule checks into CI
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+draft = Path("notes.draft").read_text(encoding="utf-8")
+# Read for reference; never execute or include in builds
+```
+
+**Rules:**
+- `.draft` files are always excluded from builds, packaging, and execution.
+- They exist for brainstorming and reference only.
+
+---
+
+### `.ref` – Reference Pointer
+
+**Use case:** Link to another file or resource without duplicating data.
+
+Example (`link_to_model.ref`):
+
+```text
+# REF v1
+type: file
+path: ../assets/models/character.rmodl
+description: Main character model for cutscene
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+ref = Path("link_to_model.ref").read_text(encoding="utf-8")
+# Parse path and resolve to the actual file
+```
+
+---
+
+### `.out` – Program Output
+
+**Use case:** Capture stdout/stderr output of a program run for logging and review.
+
+Example (`build.out`):
+
+```text
+# OUT v1
+# Program: build.py
+# Exit code: 0
+# Timestamp: 2025-03-15T14:45:00
+
+Building module: anti_spam...
+OK
+Building module: points_system...
+OK
+Building module: role_manager...
+OK
+All modules built successfully.
+```
+
+**How to use:**
+
+```python
+from pathlib import Path
+
+output = Path("build.out").read_text(encoding="utf-8")
+# Parse header for exit code; archive or display output
+```
+
 ## Integration Guide
 
 ### For ReBoot (Discord Bot)
@@ -384,6 +1052,14 @@ create_stxt([
 | `.ctxt` | Load signed moderation rules on startup, reject if signature invalid |
 | `.lujit` | Run in-game logic scripts via LuaJIT subprocess |
 | `.pyru` | Advanced plugin modules with Python (bot API) + Rust (perf-critical) |
+| `.wip` | Mark new commands/plugins as work-in-progress until tested |
+| `.lock` | Lock shared config files during live events to prevent accidental edits |
+| `.rule` | Validate bot scripts against naming and security rules before deploy |
+| `.plan` | Plan feature releases step by step |
+| `.todo` | Track granular tasks tied to a plan |
+| `.draft` | Brainstorm command ideas without polluting the active codebase |
+| `.ref` | Link bot modules to shared assets without duplication |
+| `.pref` | Per-server user preferences (theme, language) |
 
 ### For LUnlocker (System Utility)
 
@@ -393,6 +1069,18 @@ create_stxt([
 | `.ctxt` | Load signed security policies, refuse to run if tampered |
 | `.stxt` | Batch operations: clean → verify → restart service |
 | `.unkn` | Analyze unknown files before execution |
+| `.cfgx` | Advanced mode-based config (safe / aggressive / fallback) |
+| `.snap` | Checkpoint before risky operations, rollback if needed |
+| `.cache` | Cache scan results to speed up repeated runs |
+| `.dep` | Verify all dependencies are present before launching a module |
+| `.meta` | Track file provenance, hash, and version metadata |
+| `.bake` | Store pre-computed data (lightmaps, nav meshes) |
+| `.diff` | Apply incremental updates without re-downloading entire files |
+| `.texb` | Pack and load texture bundles for UI assets |
+| `.temp` | Scratch files during multi-step unlock processes |
+| `.out` | Capture and archive program output for audit logs |
+| `.seed` | Procedural generation parameters for test environments |
+| `.anim` | Animation data for UI transitions |
 
 ## VS Code Setup
 
@@ -407,7 +1095,27 @@ Add this to your `settings.json` for syntax highlighting:
     "*.stxt": "plaintext",
     "*.ctxt": "plaintext",
     "*.acf": "json",
-    "*.unkn": "plaintext"
+    "*.unkn": "plaintext",
+    "*.wip": "plaintext",
+    "*.lock": "plaintext",
+    "*.anim": "plaintext",
+    "*.dep": "ini",
+    "*.meta": "json",
+    "*.bake": "ini",
+    "*.diff": "plaintext",
+    "*.texb": "ini",
+    "*.rule": "ini",
+    "*.seed": "ini",
+    "*.cfgx": "ini",
+    "*.temp": "plaintext",
+    "*.snap": "ini",
+    "*.cache": "ini",
+    "*.pref": "ini",
+    "*.plan": "plaintext",
+    "*.todo": "plaintext",
+    "*.draft": "plaintext",
+    "*.ref": "plaintext",
+    "*.out": "plaintext"
   }
 }
 ```
@@ -416,7 +1124,7 @@ Add this to your `settings.json` for syntax highlighting:
 
 ```
 custom-formats/
-├── custom_formats.py        # Core parser module (all 7 formats)
+├── custom_formats.py        # Core parser module (all formats)
 ├── generators/
 │   ├── gen_all.py            # Run all generators at once
 │   ├── gen_luna.py           # Generate config.luna
@@ -425,7 +1133,27 @@ custom-formats/
 │   ├── gen_lujit.py          # Generate test.lujit
 │   ├── gen_acf.py            # Generate app.acf
 │   ├── gen_ctxt.py           # Generate rules.ctxt
-│   └── gen_stxt.py           # Generate actions.stxt
+│   ├── gen_stxt.py           # Generate actions.stxt
+│   ├── gen_wip.py            # Generate module.wip
+│   ├── gen_lock.py           # Generate shared.lock
+│   ├── gen_anim.py           # Generate walk.anim
+│   ├── gen_dep.py            # Generate module.dep
+│   ├── gen_meta.py           # Generate model.meta
+│   ├── gen_bake.py           # Generate scene.bake
+│   ├── gen_diff.py           # Generate v1_to_v2.diff
+│   ├── gen_texb.py           # Generate textures.texb
+│   ├── gen_rule.py           # Generate lint.rule
+│   ├── gen_seed.py           # Generate world.seed
+│   ├── gen_cfgx.py           # Generate advanced.cfgx
+│   ├── gen_temp.py           # Generate work.temp
+│   ├── gen_snap.py           # Generate checkpoint.snap
+│   ├── gen_cache.py          # Generate render.cache
+│   ├── gen_pref.py           # Generate user.pref
+│   ├── gen_plan.py           # Generate release.plan
+│   ├── gen_todo.py           # Generate release.todo
+│   ├── gen_draft.py          # Generate notes.draft
+│   ├── gen_ref.py            # Generate link_to_model.ref
+│   └── gen_out.py            # Generate build.out
 ├── examples/
 │   ├── config.luna
 │   ├── mystery.unkn
@@ -433,7 +1161,27 @@ custom-formats/
 │   ├── test.lujit
 │   ├── app.acf
 │   ├── rules.ctxt
-│   └── actions.stxt
+│   ├── actions.stxt
+│   ├── module.wip
+│   ├── shared.lock
+│   ├── walk.anim
+│   ├── module.dep
+│   ├── model.meta
+│   ├── scene.bake
+│   ├── v1_to_v2.diff
+│   ├── textures.texb
+│   ├── lint.rule
+│   ├── world.seed
+│   ├── advanced.cfgx
+│   ├── work.temp
+│   ├── checkpoint.snap
+│   ├── render.cache
+│   ├── user.pref
+│   ├── release.plan
+│   ├── release.todo
+│   ├── notes.draft
+│   ├── link_to_model.ref
+│   └── build.out
 ├── LICENSE
 └── README.md
 ```
